@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "785369438534",
+    "firebase_url": "https://fire-manager-dc845-default-rtdb.firebaseio.com",
+    "project_id": "fire-manager-dc845",
+    "storage_bucket": "fire-manager-dc845.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:785369438534:android:fff07b3627ceff04462d47",
+        "android_client_info": {
+          "package_name": "com.example.fire_manager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "785369438534-o10h08tf2pbsrq3b6aj8pedtsurbave8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzh-OXQ8p1zs2-tlXmPwuCb2xo4vLAF_g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "785369438534-o10h08tf2pbsrq3b6aj8pedtsurbave8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
