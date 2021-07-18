@@ -5,32 +5,24 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.*
+import com.google.gson.GsonBuilder
+import kotlinx.android.synthetic.main.activity_information.*
+import okhttp3.*
+import java.io.IOException
+import java.net.URL
 
-
-class InformationActivity : AppCompatActivity() {
-
-    private val firebaseDatabase: FirebaseDatabase = FirebaseDatabase.getInstance()
-    private val databaseReference: DatabaseReference = firebaseDatabase.getReference()
-    val list =  ArrayList<RecycleData>()
+ class InformationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_information)
 
-        val name = intent.getStringExtra("name")
-        val main: TextView = findViewById(R.id.bet_Arduino)
-        val led: TextView = findViewById(R.id.bet_Light)
-        val speaker: TextView = findViewById(R.id.bet_Speaker)
+
         val btn_back: ImageButton = findViewById(R.id.btn_back)
         val btn_time = findViewById<Button>(R.id.btn_time)
         val btn_date = findViewById<Button>(R.id.btn_date)
-        val mRecyclerView = findViewById<RecyclerView>(R.id.reView)
-        val adapter = RecyclerAdapter(list,this@InformationActivity)
+
 
         btn_back.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
@@ -50,46 +42,39 @@ class InformationActivity : AppCompatActivity() {
             finish()
         }
 
+        fetchJson()
 
-
-        databaseReference.child("fire1").child("battery").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (dataSnapshot != null) {
-                        Log.d("MainActivity", "Single ValueEventListener : " + dataSnapshot.getValue())
-                        main.text = "${dataSnapshot.child("main").getValue()}" +"%"
-                        led.text = "${dataSnapshot.child("led").getValue()}" + "%"
-                        speaker.text = "${dataSnapshot.child("speaker").getValue()}" + "%"
-
-                }else{
-                    Log.d("MainActivity", "NO Data" + dataSnapshot.getValue())
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {
-
-            }
-        })
-
-        databaseReference.child("fire1").child("record").addValueEventListener(object :ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if(dataSnapshot != null) {
-                    dataSnapshot.children.forEach { i ->
-                        Log.d("MainActivity", "Single ValueEventListener : " + i.getValue())
-                        list.add(RecycleData("${i.key.toString()}","${i.child("date").getValue().toString()}",
-                            "${i.child("time").getValue().toString()}"))
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), "Datasnapshot is null", Toast.LENGTH_SHORT).show()
-                }
-                val adapter = RecyclerAdapter(list,this@InformationActivity)
-                mRecyclerView.adapter = adapter
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-
-            }
-        })
-        mRecyclerView.adapter = adapter
-        mRecyclerView.setHasFixedSize(true)
 
     }
+    fun fetchJson() {
+        val url = URL("http://3.34.252.103/json.php")
+        val request = Request.Builder().url(url).build()
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call?, response: Response?) {
+                val body = response?.body()?.string()
+                println("Success to execute request! : $body")
+                Log.d("json success","제대로 가져왔습니다.")
+                //Gson으로 파싱
+                val gson = GsonBuilder().create()
+                val list = gson.fromJson(body, JsonObj::class.java)
+                Log.d("list check","${list}")
+
+                //println(list.result[0].name)
+                //여기서 나온 결과를 어답터로 연결
+                runOnUiThread {
+                    reView.adapter = RecyclerAdapter(list, this@InformationActivity)
+                }
+            }
+            override fun onFailure(call: Call?, e: IOException?) {
+                println("Failed to execute request!")
+                Log.d("json success","실패.")
+            }
+        })
+
+        }
+
 }
+ data class JsonObj(val result : List<RecycleData>)
+ data class RecycleData (val count : String, val fireplug_no: String, val is_parked: String,
+                         val controller: String, val light : String,val speaker:String, val date : String)
