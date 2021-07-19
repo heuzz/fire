@@ -14,6 +14,8 @@ import java.net.URL
 
  class InformationActivity : AppCompatActivity() {
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_information)
@@ -22,31 +24,10 @@ import java.net.URL
         val btn_back: ImageButton = findViewById(R.id.btn_back)
         val btn_time = findViewById<Button>(R.id.btn_time)
         val btn_date = findViewById<Button>(R.id.btn_date)
+        val btn_save = findViewById<Button>(R.id.btn_save)
 
-
-        btn_back.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        btn_time.setOnClickListener{
-            val intent = Intent(this, TimeActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        btn_date.setOnClickListener {
-            val intent = Intent(this, DateActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        fetchJson()
-
-
-    }
-    fun fetchJson() {
+        // PHP + JSON 연결 데이터 가져오기
+        val plug_name:String = intent.getStringExtra("name")
         val url = URL("http://3.34.252.103/json.php")
         val request = Request.Builder().url(url).build()
         val client = OkHttpClient()
@@ -57,13 +38,12 @@ import java.net.URL
                 Log.d("json success","제대로 가져왔습니다.")
                 //Gson으로 파싱
                 val gson = GsonBuilder().create()
+                Log.d("gson check","${gson}")
                 val list = gson.fromJson(body, JsonObj::class.java)
                 Log.d("list check","${list}")
 
-                //println(list.result[0].name)
-                //여기서 나온 결과를 어답터로 연결
                 runOnUiThread {
-                    reView.adapter = RecyclerAdapter(list, this@InformationActivity)
+                    reView.adapter = RecyclerAdapter(list, this@InformationActivity ,plug_name)
                 }
             }
             override fun onFailure(call: Call?, e: IOException?) {
@@ -71,10 +51,34 @@ import java.net.URL
                 Log.d("json success","실패.")
             }
         })
+        // 뒤로가기 버튼
+        btn_back.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+        // 시간별 배터리 현황 그래프 버튼
+        btn_time.setOnClickListener{
+            val intent = Intent(this, TimeActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+        // 날짜별 감지 횟수 그래프 버튼
+        btn_date.setOnClickListener {
+            val intent = Intent(this, DateActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+        // 엑셀로 저장하기 버튼
+        btn_save.setOnClickListener {
 
         }
 
-}
- data class JsonObj(val result : List<RecycleData>)
- data class RecycleData (val count : String, val fireplug_no: String, val is_parked: String,
-                         val controller: String, val light : String,val speaker:String, val date : String)
+    }
+
+
+    }
+
+ data class JsonObj(val result : ArrayList<RecycleData>)
+ data class RecycleData (val idx : String, val fireplug_no: String, val is_parked: String,
+                         val controller_battery: String, val light_battery : String,val speaker_battery:String, val regist_date : String)
